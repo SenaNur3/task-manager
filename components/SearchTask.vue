@@ -81,7 +81,6 @@ export default defineComponent({
 
     const searchResult = async () => {
       let params = createParam(text, priority)
-
       console.log('priority:', priority)
       await axios
         .get(`http://localhost:3001/tasks${params}`)

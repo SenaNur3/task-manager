@@ -6,7 +6,7 @@
   <Table :task="task" class="list-table"/>
  </div>
 </template>
-</template>
+
 
 <script>
 import { ref} from 'vue';

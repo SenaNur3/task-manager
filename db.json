@@ -1,24 +1,29 @@
 {
-  "posts": [
+  "tasks": [
     {
-      "id": 1,
-      "title": "json-server",
-      "author": "typicode"
+      "description": "sadasd",
+      "priority": "Orta",
+      "id": 4
     },
     {
-      "description": "dadasd",
-      "priority": "Yüksek",
-      "id": 2
-    }
-  ],
-  "comments": [
+      "description": "sdasada",
+      "priority": "Orta",
+      "id": 5
+    },
     {
-      "id": 1,
-      "body": "some comment",
-      "postId": 1
+      "description": "dasdasdas",
+      "priority": "Orta",
+      "id": 6
+    },
+    {
+      "description": "sddsf",
+      "priority": "Yüksek",
+      "id": 7
+    },
+    {
+      "description": "safdsdf",
+      "priority": "Yüksek",
+      "id": 8
     }
-  ],
-  "profile": {
-    "name": "typicode"
-  }
+  ]
 }

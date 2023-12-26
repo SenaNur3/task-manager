@@ -71,13 +71,15 @@ export default defineComponent({
         message.error('Görev adı ve öncelik seçimi zorunludur.')
         return
       }
-      axios.post('http://localhost:3000/posts', {
+      axios.post('http://localhost:3001/tasks', {
         description: description.value,
         priority: priority.value,
       })
       .then(response => {
         console.log('Başarıyla eklendi:', response.data);
-        taskStore.addTask(response.data);
+
+        let setData = getTasks.value ? [...getTasks.value, response.data] : [response.data ]
+        taskStore.addTask(setData);
 
         description.value = '';
         priority.value = '';

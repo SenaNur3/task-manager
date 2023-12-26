@@ -32,7 +32,7 @@
 import { defineComponent, ref, watch } from 'vue'
 import { useTasksStore } from '~/store/tasksManager'
 import { storeToRefs } from 'pinia'
-import descriptions from 'ant-design-vue/lib/descriptions'
+import axios from 'axios'
 
 export default defineComponent({
   setup() {
@@ -64,17 +64,37 @@ export default defineComponent({
       console.log('value', value)
       priority = value
     }
-    const searchResult = () => {
-      console.log("getTasks.value",getTasks.value)
-      const filtered = getTasks.value
-        .filter(item=> priority.length ===0 ||  priority.includes(item.priority) )
-        .filter(item =>!text || item?.description.includes(text))
-  
-      filteredTasks.value = filtered;
-      console.log("filtered",filtered)
+
+    const createParam = (text, priority) => {
+      let params = ''
+      if (text?.length) {
+        params = +params + params.length ? '&' : '?' + 'description=' + text
+      }
+
+      if (priority?.length) {
+        console.log('aa', priority)
+        params = +params + params.length ? '&' : '?' + 'priority=' + priority
+      }
+
+      return params
+    }
+
+    const searchResult = async () => {
+      let params = createParam(text, priority)
+
+      console.log('priority:', priority)
+      await axios
+        .get(`http://localhost:3001/tasks${params}`)
+        .then((response) => {
+          console.log('filtered', response.data)
+          taskStore.addTask(response.data)
+        })
+        .catch((error) => {
+          console.error('İstek hatası:', error)
+        })
     }
     watch(text, (newValue, oldValue) => {
-        text = newValue
+      text = newValue
       searchResult()
     })
     watch(priority, (newValue, oldValue) => {
@@ -83,7 +103,7 @@ export default defineComponent({
     })
 
     return {
-        text,
+      text,
       priority,
       options,
       onChangeDescription,

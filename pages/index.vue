@@ -36,6 +36,11 @@ export default {
   justify-content: center;
   padding: 40px 120px 0 120px;
  }
+ @media only screen and (max-width: 1190px) {
+body{
+  flex-direction: column;
+}
+ }
  .list-table{
   margin-top: 40px;
  }

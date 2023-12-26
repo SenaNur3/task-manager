@@ -4,6 +4,7 @@
   <CreateTask :task="task" @handleSetTask="handleSetTaskFNC"/>
   <SearchTask/>
   <Table :task="task" class="list-table"/>
+  <Footer/>
  </div>
 </template>
 

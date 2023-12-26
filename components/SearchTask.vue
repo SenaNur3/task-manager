@@ -78,8 +78,50 @@ export default defineComponent({
 
       return params
     }
+  const searchResult = () => {
+  // Kullanılacak inputları al
+  const searchText = getTasks.value;
+  const searchPriority = priority.value;
 
-    const searchResult = async () => {
+  // İki parametre varsa hem metin hem de öncelik filtresi uygula
+  if (text && searchPriority) {
+    let filtered = searchText.filter(
+      (task) =>
+        typeof text === 'string' &&
+        String(task.description).toLowerCase().includes(text.toLowerCase())
+    );
+
+    filtered = filtered.filter((task) =>
+      Array.isArray(searchPriority) && searchPriority.includes(task.priority)
+    );
+
+    filteredTasks.value = filtered;
+  } else {
+    // Sadece metin filtresi
+    if (text) {
+      let filtered = searchText.filter(
+        (task) =>
+          typeof text === 'string' &&
+          String(task.description).toLowerCase().includes(text.toLowerCase())
+      );
+
+      filteredTasks.value = filtered;
+    }
+
+    // Sadece öncelik filtresi
+    if (searchPriority && !text) {
+      let filtered = searchText.filter((task) =>
+        Array.isArray(searchPriority) && searchPriority.includes(task.priority)
+      );
+      filteredTasks.value = filtered;
+    }
+  }
+
+  taskStore.setSearchTask(filteredTasks.value);
+
+  console.log("searchResult", filteredTasks.value);
+};
+   /*  const searchResult = async () => {
       let params = createParam(text, priority)
       console.log('priority:', priority)
       await axios
@@ -91,14 +133,16 @@ export default defineComponent({
         .catch((error) => {
           console.error('İstek hatası:', error)
         })
-    }
+    } */
     watch(text, (newValue, oldValue) => {
       text = newValue
       searchResult()
+      text.length ? taskStore.setIsSearchTask(true):taskStore.setIsSearchTask(false)
     })
     watch(priority, (newValue, oldValue) => {
       priority = newValue
       searchResult()
+      priority.length ? taskStore.setIsSearchTask(true):taskStore.setIsSearchTask(false)
     })
 
     return {

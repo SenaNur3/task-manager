@@ -6,7 +6,7 @@
         <th class="table-priority">Öncelik</th>
         <th class="table-buttons">İşlem</th>
       </tr>
-      <tr v-for="(task, index) in getTasks" :key="index">
+      <tr v-for="(task, index) in (getIsSearchs ? getSearchs: getTasks)" :key="index">
         <td class="table-description">{{ task.description }}</td>
         <td class="table-priority">
           <span :class="getPriorityClass(task.priority)">{{
@@ -64,8 +64,8 @@ export default defineComponent({
     let updateData = ref()
     let data = ref([])
     const taskStore = useTasksStore()
-    const { getTasks } = storeToRefs(taskStore)
-
+    const { getTasks,getSearchs ,getIsSearchs} = storeToRefs(taskStore)
+   
     const getPriorityClass = (priority) => {
       if (priority === 'Yüksek') {
         return 'high-priority'
@@ -179,6 +179,8 @@ export default defineComponent({
       getTasks,
       showModal,
       getPriorityClass,
+      getSearchs,
+      getIsSearchs
     }
   },
 })

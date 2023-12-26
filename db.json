@@ -1,29 +1,24 @@
 {
   "tasks": [
     {
-      "description": "sadasd",
+      "description": "sdasdas",
       "priority": "Orta",
+      "id": 1
+    },
+    {
+      "description": "fgdfgdf",
+      "priority": "Orta",
+      "id": 2
+    },
+    {
+      "description": "fdfgdfgd",
+      "priority": "Yüksek",
+      "id": 3
+    },
+    {
+      "description": "zzzzz",
+      "priority": "Düşük",
       "id": 4
-    },
-    {
-      "description": "sdasada",
-      "priority": "Orta",
-      "id": 5
-    },
-    {
-      "description": "dasdasdas",
-      "priority": "Orta",
-      "id": 6
-    },
-    {
-      "description": "sddsf",
-      "priority": "Yüksek",
-      "id": 7
-    },
-    {
-      "description": "safdsdf",
-      "priority": "Yüksek",
-      "id": 8
     }
   ]
 }

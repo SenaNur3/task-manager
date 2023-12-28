@@ -4,21 +4,22 @@
     <div class="container">
       <a-input
         class="search-input"
-        size="large"
         placeholder="Görev adını filtrele"
         v-model="text"
         @change="onChangeDescription"
+        style="width: 768px"
+        size="large"
       />
 
       <a-select
         v-model="priority"
         mode="multiple"
-        style="width: 409px"
-        size="large"
+        style="width: 385px"
         placeholder="Seçiniz"
-        option-label-prop="label"
         removeIcon=" "
+        size="large"
         @change="onChangePriority"
+        class="select"
       >
         <a-select-option value="Yüksek" label="Yüksek">Yüksek</a-select-option>
         <a-select-option value="Orta" label="Orta">Orta</a-select-option>
@@ -32,7 +33,6 @@
 import { defineComponent, ref, watch } from 'vue'
 import { useTasksStore } from '~/store/tasksManager'
 import { storeToRefs } from 'pinia'
-import axios from 'axios'
 
 export default defineComponent({
   setup() {
@@ -55,7 +55,7 @@ export default defineComponent({
         label: 'Düşük',
       },
     ])
-
+    const showPlaceholder = ref(true)
     const onChangeDescription = (value) => {
       console.log('value', value.srcElement.value)
       text = value.srcElement.value
@@ -65,24 +65,10 @@ export default defineComponent({
       priority = value
     }
 
-    const createParam = (text, priority) => {
-      let params = ''
-      if (text?.length) {
-        params = +params + params.length ? '&' : '?' + 'description=' + text
-      }
-
-      if (priority?.length) {
-        console.log('aa', priority)
-        params = +params + params.length ? '&' : '?' + 'priority=' + priority
-      }
-
-      return params
-    }
     const searchResult = () => {
       // Kullanılacak inputları al
       const searchText = getTasks.value
       const searchPriority = priority
-
 
       // İki parametre varsa hem metin hem de öncelik filtresi uygula
 
@@ -98,10 +84,11 @@ export default defineComponent({
             Array.isArray(searchPriority) &&
             searchPriority.includes(task.priority)
         )
-
+        filtered.length === 0
+          ? taskStore.setShowData(true)
+          : taskStore.setShowData(false)
         filteredTasks.value = filtered
       } else {
-
         // Sadece metin filtresi
         if (text) {
           let filtered = searchText.filter(
@@ -111,19 +98,22 @@ export default defineComponent({
                 .toLowerCase()
                 .includes(text.toLowerCase())
           )
-
+          filtered.length === 0
+            ? taskStore.setShowData(true)
+            : taskStore.setShowData(false)
           filteredTasks.value = filtered
         }
 
-
         // Sadece öncelik filtresi
         if (searchPriority.length && text.value === '') {
-
           let filtered = searchText.filter(
             (task) =>
               Array.isArray(searchPriority) &&
               searchPriority.includes(task.priority)
           )
+          filtered.length === 0
+            ? taskStore.setShowData(true)
+            : taskStore.setShowData(false)
           filteredTasks.value = filtered
         }
       }
@@ -137,14 +127,14 @@ export default defineComponent({
       searchResult()
       text.length
         ? taskStore.setIsSearchTask(true)
-        : taskStore.setIsSearchTask(false)
+        :(taskStore.setIsSearchTask(false), taskStore.setShowData(false))
     })
     watch(priority, (newValue, oldValue) => {
       priority = newValue
       searchResult()
       priority.length
         ? taskStore.setIsSearchTask(true)
-        : taskStore.setIsSearchTask(false)
+        : (taskStore.setIsSearchTask(false), taskStore.setShowData(false))
     })
 
     return {
@@ -155,6 +145,7 @@ export default defineComponent({
       taskStore,
       onChangePriority,
       searchResult,
+      showPlaceholder,
     }
   },
 })
@@ -195,6 +186,8 @@ export default defineComponent({
   line-height: 22px; /* 137.5% */
   letter-spacing: 0.08px;
   padding: 4px 8px;
+  margin-top: 8px;
+  margin-right: 16px;
 }
 .ant-select-lg
   .ant-select-selection--multiple
@@ -215,6 +208,8 @@ export default defineComponent({
   font-weight: 500;
   line-height: 22px; /* 137.5% */
   letter-spacing: 0.08px;
+  margin-top: 8px;
+  margin-right: 16px;
 }
 
 .ant-select-lg
@@ -236,5 +231,17 @@ export default defineComponent({
   font-weight: 500;
   line-height: 22px; /* 137.5% */
   letter-spacing: 0.08px;
+  margin-top: 8px;
+  margin-right: 16px;
+}
+@media only screen and (max-width: 950px) {
+  .search-input {
+    width: 100% !important;
+    max-width: 600px !important;
+  }
+  .select {
+    width: 100% !important;
+    max-width: 600px !important;
+  }
 }
 </style>

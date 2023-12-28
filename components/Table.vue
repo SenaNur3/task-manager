@@ -1,35 +1,50 @@
 <template>
   <div class="table">
     <table>
-      <tr>
-        <th class="table-description">Açıklama</th>
-        <th class="table-priority">Öncelik</th>
-        <th class="table-buttons">İşlem</th>
-      </tr>
-      <tr v-for="(task, index) in (getIsSearchs ? getSearchs: getTasks)" :key="index">
-        <td class="table-description">{{ task.description }}</td>
-        <td class="table-priority">
-          <span :class="getPriorityClass(task.priority)">{{
-            task.priority
-          }}</span>
-        </td>
-        <td class="table-buttons buttons">
-          <a-popconfirm
-            v-if="getTasks.length"
-            title="Silmek istediğine emin misin ?"
-            @confirm="onDelete(task)"
-            okText="Evet"
-            cancelText="Hayır"
+      <thead>
+        <tr>
+          <th class="table-description">Açıklama</th>
+          <th class="table-priority">Öncelik</th>
+          <th class="table-buttons">İşlem</th>
+        </tr>
+      </thead>
+      <template v-if="!getShowData">
+        <tbody>
+          <tr
+            v-for="(task, index) in getIsSearchs ? getSearchs : getTasks"
+            :key="index"
           >
-            <a><img src="~/assets/Trash.svg" /></a>
-          </a-popconfirm>
+            <td class="table-description">{{ task.description }}</td>
+            <td class="table-priority">
+              <div class="priority">
+              <span :class="getPriorityClass(task.priority)">{{
+                task.priority
+              }}</span>
+              </div>
+            </td>
+            <td class="table-buttons">
+              <div class="buttons">
+              <a-popconfirm
+                v-if="getTasks.length"
+                title="Silmek istediğine emin misin ?"
+                @confirm="onDelete(task)"
+                okText="Evet"
+                cancelText="Hayır"
+              >
+                <a><img src="~/assets/Trash.svg" /></a>
+              </a-popconfirm>
+              <a @click="showModal(task)"><img src="~/assets/Edit.svg" /></a>
+            </div>
+            </td>
+          </tr>
+        </tbody>
+      </template>
 
-          <a @click="showModal(task)"><img src="~/assets/Edit.svg" /></a>
-        </td>
-      </tr>
     </table>
-
-    <a-modal v-model:visible="visible" @ok="onUpdate">
+    <template v-if="getShowData">
+            <a-empty :image="simpleImage" description="veri yok"/>
+      </template>
+    <a-modal v-model:visible="visible" @ok="update">
       <h2 class="modal-title">Görevi Düzenle</h2>
       <div class="container-modal">
         <div class="modal-input-field">
@@ -53,7 +68,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTasksStore } from '~/store/tasksManager'
 import axios from 'axios'
-
+import { message } from 'ant-design-vue'
+import { Empty } from 'ant-design-vue'
 export default defineComponent({
   name: 'Table',
   setup() {
@@ -64,8 +80,9 @@ export default defineComponent({
     let updateData = ref()
     let data = ref([])
     const taskStore = useTasksStore()
-    const { getTasks,getSearchs ,getIsSearchs} = storeToRefs(taskStore)
-   
+    const { getTasks, getSearchs, getIsSearchs, getShowData } =
+      storeToRefs(taskStore)
+
     const getPriorityClass = (priority) => {
       if (priority === 'Yüksek') {
         return 'high-priority'
@@ -105,10 +122,14 @@ export default defineComponent({
       console.log('value', value)
       console.log('getTasks', getTasks)
       replacedList = getTasks.value.filter((item) => item.id !== value.id)
+      replacedList.length === 0
+            ? taskStore.setShowData(true)
+            : taskStore.setShowData(false)
       axios
         .delete(`http://localhost:3001/tasks/${value.id}`)
         .then((response) => {
           console.log('Silindi:', response.data)
+        
           description.value = ''
           priority.value = ''
         })
@@ -118,8 +139,33 @@ export default defineComponent({
       console.log('replacedList', replacedList)
       taskStore.deleteTask(replacedList)
     }
+    const update = () => {
+      console.log('burdayım')
+      if (!description.value.trim()) {
+        message.error('Görev adı boş olamaz.')
+        return
+      }
+      if (
+        description.value.length > 255 ||
+        !/^[a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\s]+$/.test(description.value)
+      ) {
+        message.error(
+          'Görev adı geçerli değil. 255 karakteri geçmemeli ve sadece alfanümerik karakterler içermelidir.'
+        )
+        return
+      }
+      if (!priority.value.trim()) {
+        message.error('Görev önceliği boş olamaz.')
+        return
+      }
+      if (description.value && priority.value) {
+        onUpdate()
+      }
+    }
     const onUpdate = () => {
       const replacedList = []
+      console.log('descriptionmodal', description)
+      console.log('prioritymodal', priority)
       getTasks.value.map((item) => {
         if (item.id === updateData.value.id) {
           replacedList.push({
@@ -156,6 +202,10 @@ export default defineComponent({
         .then((response) => {
           data = response.data
           console.log('başarıyla veri yüklendi', data)
+          console.log('getshow data', getShowData.value)
+          response.data.length === 0
+            ? taskStore.setShowData(true)
+            : taskStore.setShowData(false)
           taskStore.addTask(response.data)
         })
         .catch((error) => {
@@ -170,6 +220,7 @@ export default defineComponent({
 
     return {
       data,
+      update,
       onDelete,
       onUpdate,
       options,
@@ -180,7 +231,9 @@ export default defineComponent({
       showModal,
       getPriorityClass,
       getSearchs,
-      getIsSearchs
+      getIsSearchs,
+      simpleImage: Empty.PRESENTED_IMAGE_SIMPLE,
+      getShowData,
     }
   },
 })
@@ -192,11 +245,12 @@ table {
   border-radius: 2px 2px 0 0;
   border-collapse: separate;
   border-spacing: 0;
+  border: 1px solid #f0f0f0;
 }
 th {
   padding: 16px;
   overflow-wrap: break-word;
-  color: #3981F6;
+  color: #3981f6;
   font-weight: 500;
   text-align: left;
   background: #fafafa;
@@ -204,6 +258,10 @@ th {
 }
 th:first-child {
   border-top-left-radius: 2px;
+  border-right: 1px solid #f0f0f0;
+}
+th:nth-child(2) {
+  border-right: 1px solid #f0f0f0;
 }
 th:last-child {
   border-top-right-radius: 2px;
@@ -213,7 +271,14 @@ td {
   overflow-wrap: break-word;
   border-bottom: 1px solid #f0f0f0;
 }
-
+td:nth-child(1) {
+  border-right: 1px solid #f0f0f0;
+}
+td:nth-child(2) {
+  border-right: 1px solid #f0f0f0;
+}
+td:nth-child() {
+}
 .table-description {
   width: 788px;
 }
@@ -226,7 +291,6 @@ td {
 .buttons {
   display: flex;
   justify-content: space-around;
-  padding: 19px;
 }
 .high-priority {
   background-color: #fcdcdc;
@@ -298,16 +362,19 @@ td {
   display: flex;
   justify-content: center;
 }
-.ant-popover-buttons{
+.ant-popover-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
 }
-.ant-btn-sm{
-
+.ant-btn-sm {
 }
-.ant-popover-buttons .ant-btn-primary{
-  background-color:#ff6f09 !important; 
+.ant-popover-buttons .ant-btn-primary {
+  background-color: #ff6f09 !important;
   border-color: #fff;
+}
+.priority{
+display: flex;
+justify-content: center;
 }
 </style>
